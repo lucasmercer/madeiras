@@ -1,0 +1,64 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&family=Open+Sans:wght@300;400;500;600;700;800&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Open Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Montserrat", ui-sans-serif, system-ui, sans-serif;
+
+  /* Cores Customizadas Inspiradas no Solo e Florestas do Paraná */
+  --color-forest-50: #f4f7f5;
+  --color-forest-100: #e2ede6;
+  --color-forest-200: #c2dccb;
+  --color-forest-500: #2d6a4f;
+  --color-forest-600: #1b4332;
+  --color-forest-700: #132a13;
+  --color-forest-800: #081c15;
+  --color-forest-900: #040e0a;
+
+  --color-wood-50: #fcf9f5;
+  --color-wood-100: #f6eeda;
+  --color-wood-200: #ecdcb9;
+  --color-wood-500: #a0522d;
+  --color-wood-600: #8c421f;
+  --color-wood-700: #703314;
+  --color-wood-800: #5c260b;
+  --color-wood-900: #421a05;
+
+  --color-terracota-50: #fbf6f3;
+  --color-terracota-500: #c66b3d;
+  --color-terracota-600: #b05426;
+  --color-terracota-700: #934017;
+
+  --color-slate-900: #121614;
+  --color-offwhite: #faf8f5;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    font-family: var(--font-sans);
+    background-color: var(--color-offwhite);
+    color: var(--color-slate-900);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+  }
+}
+
+/* Custom Utilities for Premium Visual Flair */
+.wood-gradient {
+  background: linear-gradient(135deg, var(--color-wood-700) 0%, var(--color-wood-900) 100%);
+}
+
+.forest-gradient {
+  background: linear-gradient(135deg, var(--color-forest-600) 0%, var(--color-forest-800) 100%);
+}
+
+.forest-gradient-light {
+  background: linear-gradient(135deg, var(--color-forest-50) 0%, var(--color-forest-100) 100%);
+}
+
+.terracota-gradient {
+  background: linear-gradient(135deg, var(--color-terracota-500) 0%, var(--color-terracota-700) 100%);
+}
