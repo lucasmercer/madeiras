@@ -1,6 +1,0 @@
-{
-  "name": "Leniar Madeiras",
-  "description": "Leniar Madeiras - Extração, beneficiamento, tratamento em autoclave e logística em Tibagi-PR.",
-  "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
-}
