@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Leniar Madeiras | Madeireira em Tibagi, Pinus, Eucalipto e Autoclave no Paraná</title>
-  <meta name="description" content="Leniar Madeiras em Tibagi-PR (Alto do Amparo). Especialistas em extração de madeiras, beneficiamento, tratamento autoclave (eucalipto e pinus) de durabilidade máxima e logística própria para o Paraná.">
-  <meta name="keywords" content="Madeireira em Tibagi, Madeira de Pinus, Madeira de Eucalipto, Madeira Tratada Autoclave, Autoclave Paraná, Logística de madeiras, Alto do Amparo">
+  <meta name="description" content="Leniar Madeiras em Tibagi-PR (Rod 376). Especialistas em extração de madeiras, beneficiamento, tratamento autoclave (eucalipto e pinus) de durabilidade máxima e logística própria para o Paraná.">
+  <meta name="keywords" content="Madeireira em Tibagi, Rod 376, Madeira de Pinus, Madeira de Eucalipto, Madeira Tratada Autoclave, Autoclave Paraná, Logística de madeiras, Alto do Amparo">
   <meta name="author" content="Leniar Madeiras">
   <!-- Fonts & Stylings -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -67,6 +67,37 @@
   boardWidth: '30',
   boardLength: 3,
   boardQty: 100,
+  boardItems: [],
+  addBoardItem() {
+    const qty = parseInt(this.boardQty) || 0;
+    if (qty <= 0) return;
+    this.boardItems.push({
+      width: this.boardWidth,
+      length: parseFloat(this.boardLength),
+      qty: qty
+    });
+  },
+  removeBoardItem(index) {
+    this.boardItems.splice(index, 1);
+  },
+  get totalBoardCubicMeters() {
+    if (this.boardItems.length === 0) {
+      return ((2.5 / 100) * (parseFloat(this.boardWidth) / 100) * this.boardLength * this.boardQty);
+    }
+    return this.boardItems.reduce((acc, item) => acc + ((2.5 / 100) * (parseFloat(item.width) / 100) * item.length * item.qty), 0);
+  },
+  get totalBoardLinearMeters() {
+    if (this.boardItems.length === 0) {
+      return this.boardLength * this.boardQty;
+    }
+    return this.boardItems.reduce((acc, item) => acc + (item.length * item.qty), 0);
+  },
+  get totalBoardQty() {
+    if (this.boardItems.length === 0) {
+      return this.boardQty;
+    }
+    return this.boardItems.reduce((acc, item) => acc + item.qty, 0);
+  },
   isWhatsappBtnVisible: false,
   sendCoutation() {
     let message = '';
@@ -79,11 +110,19 @@
       const estimatedWeight = Math.round(cubicMeters * (this.variant === 'eucalipto' ? 750 : 500));
       message = `Olá Leniar! Calculei a cubagem de vigamento no site:\n- Madeira: ${this.variant === 'eucalipto' ? 'Eucalipto Estrutural' : 'Pinus Comum/Beneficiado'}\n- Dimensões: ${this.thickness}cm x ${this.width}cm x ${this.length}m\n- Quantidade: ${this.quantity} unidades\n- Cubagem Total Estimada: ${cubicMeters.toFixed(3)} m³ | Peso estimado: ~${estimatedWeight}kg\nGostaria de solicitar um orçamento para este lote de madeiramento.`;
     } else {
-      const boardCubicMeters = ((2.5 / 100) * (parseFloat(this.boardWidth) / 100) * this.boardLength * this.boardQty);
-      const boardLinearMeters = this.boardLength * this.boardQty;
-      message = `Olá Leniar! Calculei tábuas para fôrma/construção civil no site:\n- Dimensões: Tábuas de Espessura 2.5cm (1) x Largura ${this.boardWidth}cm x Comprimento ${this.boardLength}m\n- Quantidade solicitada: ${this.boardQty} peças\n- Volume Linear: ${boardLinearMeters} metros lineares | Cubagem: ${boardCubicMeters.toFixed(3)} m³\nGostaria de consultar a disponibilidade no pátio de Tibagi-PR e opções de entrega.`;
+      let details = '';
+      if (this.boardItems.length > 0) {
+        details = '\n\n📋 *Itens Solicitados na Lista:*' + this.boardItems.map((item, index) => {
+          const m3 = ((2.5 / 100) * (parseFloat(item.width) / 100) * item.length * item.qty);
+          return `\n👉 ${index + 1}) Tábua 2.5cm x ${item.width}cm x ${item.length}m | Qtd: ${item.qty} un (~${m3.toFixed(3)} m³)`;
+        }).join('');
+      } else {
+        const boardCubicMeters = ((2.5 / 100) * (parseFloat(this.boardWidth) / 100) * this.boardLength * this.boardQty);
+        details = `\n- Tábua 2.5cm x ${this.boardWidth}cm x ${this.boardLength}m | Qtd: ${this.boardQty} un (~${boardCubicMeters.toFixed(3)} m³)`;
+      }
+      message = `Olá Leniar! Calculei tábuas para fôrma/construção civil no site:\n- Espécie: ${this.variant === 'eucalipto' ? 'Eucalipto Autoclavado' : 'Pinus Selecionado'}${details}\n\n*Resumo Consolidado:*\n- Volume Total Estimado: ${this.totalBoardCubicMeters.toFixed(3)} m³\n- Comprimento Linear Total: ${this.totalBoardLinearMeters} metros\nGostaria de consultar a disponibilidade no pátio de Tibagi-PR e opções de entrega.`;
     }
-    window.open(`https://wa.me/5542988869655?text=${encodeURIComponent(message)}`, '_blank');
+    window.open(`https://wa.me/5542988094197?text=${encodeURIComponent(message)}`, '_blank');
   }
 }" 
 @scroll.window="
@@ -105,18 +144,19 @@
         </div>
       </a>
       <!-- Desktop Menu -->
-      <nav class="hidden md:flex items-center gap-8">
+      <nav class="hidden md:flex items-center gap-7">
         <a href="#home" class="text-sm font-semibold tracking-wide transition-colors relative py-1 group" :class="isScrolled ? 'text-slate-700 hover:text-forest-600' : 'text-white/90 hover:text-white'">Início<span :class="isScrolled ? 'bg-forest-600' : 'bg-wood-200'" class="absolute bottom-0 left-0 w-0 h-0.5 group-hover:w-full transition-all duration-300"></span></a>
         <a href="#sobre" class="text-sm font-semibold tracking-wide transition-colors relative py-1 group" :class="isScrolled ? 'text-slate-700 hover:text-forest-600' : 'text-white/90 hover:text-white'">Sobre Nós<span :class="isScrolled ? 'bg-forest-600' : 'bg-wood-200'" class="absolute bottom-0 left-0 w-0 h-0.5 group-hover:w-full transition-all duration-300"></span></a>
         <a href="#produtos" class="text-sm font-semibold tracking-wide transition-colors relative py-1 group" :class="isScrolled ? 'text-slate-700 hover:text-forest-600' : 'text-white/90 hover:text-white'">Divisões<span :class="isScrolled ? 'bg-forest-600' : 'bg-wood-200'" class="absolute bottom-0 left-0 w-0 h-0.5 group-hover:w-full transition-all duration-300"></span></a>
         <a href="#autoclave" class="text-sm font-semibold tracking-wide transition-colors relative py-1 group" :class="isScrolled ? 'text-slate-700 hover:text-forest-600' : 'text-white/90 hover:text-white'">Autoclave<span :class="isScrolled ? 'bg-forest-600' : 'bg-wood-200'" class="absolute bottom-0 left-0 w-0 h-0.5 group-hover:w-full transition-all duration-300"></span></a>
         <a href="#logistica" class="text-sm font-semibold tracking-wide transition-colors relative py-1 group" :class="isScrolled ? 'text-slate-700 hover:text-forest-600' : 'text-white/90 hover:text-white'">Logística<span :class="isScrolled ? 'bg-forest-600' : 'bg-wood-200'" class="absolute bottom-0 left-0 w-0 h-0.5 group-hover:w-full transition-all duration-300"></span></a>
+        <a href="#videos" class="text-sm font-semibold tracking-wide transition-colors relative py-1 group" :class="isScrolled ? 'text-slate-700 hover:text-forest-600' : 'text-white/90 hover:text-white'">Vídeos<span :class="isScrolled ? 'bg-forest-600' : 'bg-wood-200'" class="absolute bottom-0 left-0 w-0 h-0.5 group-hover:w-full transition-all duration-300"></span></a>
         <a href="#calculadora" class="text-sm font-semibold tracking-wide transition-colors relative py-1 group" :class="isScrolled ? 'text-slate-700 hover:text-forest-600' : 'text-white/90 hover:text-white'">Simulador<span :class="isScrolled ? 'bg-forest-600' : 'bg-wood-200'" class="absolute bottom-0 left-0 w-0 h-0.5 group-hover:w-full transition-all duration-300"></span></a>
         <a href="#contato" class="text-sm font-semibold tracking-wide transition-colors relative py-1 group" :class="isScrolled ? 'text-slate-700 hover:text-forest-600' : 'text-white/90 hover:text-white'">Contato<span :class="isScrolled ? 'bg-forest-600' : 'bg-wood-200'" class="absolute bottom-0 left-0 w-0 h-0.5 group-hover:w-full transition-all duration-300"></span></a>
       </nav>
       <!-- CTA Button -->
       <div class="hidden md:flex items-center">
-        <a href="https://wa.me/5542988869655" target="_blank" rel="noopener noreferrer" :class="isScrolled ? 'bg-forest-600 hover:bg-forest-700 text-white shadow-sm' : 'bg-white/20 hover:bg-white hover:text-slate-900 text-white border border-white/30'" class="flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-xs tracking-wider uppercase transition-all duration-200">
+        <a href="https://wa.me/5542988094197" target="_blank" rel="noopener noreferrer" :class="isScrolled ? 'bg-forest-600 hover:bg-forest-700 text-white shadow-sm' : 'bg-white/20 hover:bg-white hover:text-slate-900 text-white border border-white/30'" class="flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-xs tracking-wider uppercase transition-all duration-200">
           <i data-lucide="phone" class="w-4 h-4"></i>Solicitar Orçamento
         </a>
       </div>
@@ -133,10 +173,11 @@
       <a href="#produtos" @click="isMobileMenuOpen = false" class="block px-3 py-2.5 rounded-lg text-base font-medium text-slate-800 hover:bg-forest-50 hover:text-forest-600">Divisões de Madeira</a>
       <a href="#autoclave" @click="isMobileMenuOpen = false" class="block px-3 py-2.5 rounded-lg text-base font-medium text-slate-800 hover:bg-forest-50 hover:text-forest-600">Autoclave</a>
       <a href="#logistica" @click="isMobileMenuOpen = false" class="block px-3 py-2.5 rounded-lg text-base font-medium text-slate-800 hover:bg-forest-50 hover:text-forest-600">Logística</a>
+      <a href="#videos" @click="isMobileMenuOpen = false" class="block px-3 py-2.5 rounded-lg text-base font-medium text-slate-800 hover:bg-forest-50 hover:text-forest-600">Vídeos Operacionais</a>
       <a href="#calculadora" @click="isMobileMenuOpen = false" class="block px-3 py-2.5 rounded-lg text-base font-medium text-slate-800 hover:bg-forest-50 hover:text-forest-600">Simulador de Cubagem</a>
       <a href="#contato" @click="isMobileMenuOpen = false" class="block px-3 py-2.5 rounded-lg text-base font-medium text-slate-800 hover:bg-forest-50 hover:text-forest-600">Contato</a>
       <div class="pt-4 border-t border-stone-100">
-        <a href="https://wa.me/5542988869655" target="_blank" class="flex items-center justify-center gap-2 w-full px-4 py-3 rounded-lg bg-[#25D366] text-white font-bold tracking-wide text-sm shadow-md">
+        <a href="https://wa.me/5542988094197" target="_blank" class="flex items-center justify-center gap-2 w-full px-4 py-3 rounded-lg bg-[#25D366] text-white font-bold tracking-wide text-sm shadow-md">
           <i data-lucide="phone" class="w-4 h-4"></i>Falar com Vendedor
         </a>
       </div>
@@ -156,7 +197,7 @@
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
           <div class="lg:col-span-8 space-y-8 text-left">
             <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-forest-500/20 border border-forest-400/40 text-forest-100 text-xs sm:text-sm font-semibold uppercase tracking-wider animate-pulse">
-              <span class="flex h-2.5 w-2.5 rounded-full bg-orange-500"></span>Leniar Madeiras – Alto do Amparo, Tibagi-PR
+              <span class="flex h-2.5 w-2.5 rounded-full bg-orange-500"></span>Leniar Madeiras – Rod 376, Tibagi-PR
             </div>
             <h1 class="text-4xl sm:text-5xl lg:text-7xl font-extrabold tracking-tight text-white leading-tight font-display">
               Tecnologia, Robustez e <br class="hidden sm:block"><span class="text-transparent bg-clip-text bg-gradient-to-r from-wood-200 via-orange-300 to-forest-200">Soluções em Madeira</span>
@@ -212,8 +253,8 @@
               <div class="absolute bottom-6 left-6 right-6 p-5 bg-white/95 backdrop-blur-md rounded-2xl shadow-xl flex items-center gap-4 border border-stone-100">
                 <div class="bg-forest-600 text-white p-3 rounded-xl"><i data-lucide="map-pin" class="w-6 h-6"></i></div>
                 <div>
-                  <h4 class="font-display font-bold text-slate-900 text-sm leading-none">Sede em Alto do Amparo</h4>
-                  <p class="text-slate-600 text-xs mt-1.5">Tibagi, Paraná – Posicionamento ideal no coração florestal do Sul.</p>
+                  <h4 class="font-display font-bold text-slate-900 text-sm leading-none">Sede na Rod 376, Km 434</h4>
+                  <p class="text-slate-600 text-xs mt-1.5">Tibagi, Paraná – Posicionamento ideal às margens da rodovia de escoamento rápido.</p>
                 </div>
               </div>
             </div>
@@ -222,7 +263,7 @@
           <div class="lg:col-span-6 space-y-8">
             <h3 class="text-xl sm:text-2xl font-bold text-slate-800 tracking-tight leading-snug">Beneficiamento integrado, do reflorestamento à logística pesada de entrega.</h3>
             <p class="text-slate-600 leading-relaxed font-light text-sm sm:text-base">
-              Nascida e consolidada em <strong>Alto do Amparo, distrito industrial de Tibagi-PR</strong>, a <strong>Leniar Madeiras</strong> destaca-se por centralizar todo o processo produtivo de madeiramento estrutural de alta fidelidade e blindagem. Cuidamos com perfeição de todas as etapas: manejo ecologicamente certificado, serragem mecânica rigorosa, tratamento em autoclave sob as normas técnicas mais exigentes do mercado e transporte rodoviário.
+              Nascida e consolidada na <strong>Rod 376, Km 434 em Tibagi-PR</strong>, a <strong>Leniar Madeiras</strong> destaca-se por centralizar todo o processo produtivo de madeiramento estrutural de alta fidelidade e blindagem. Cuidamos com perfeição de todas as etapas: manejo ecologicamente certificado, serragem mecânica rigorosa, tratamento em autoclave sob as normas técnicas mais exigentes do mercado e transporte rodoviário.
             </p>
             <p class="text-slate-600 leading-relaxed font-light text-sm sm:text-base">
               Atendemos o varejo pesado, construtoras do ramo civil corporativo e produtores agropecuários de Campos Gerais e Grande Curitiba. Fornecemos caibros e pranchas grossas de Eucalyptus, tábuas de Pinus para formas e tapumes de obras e escoras em todas as bitolas comerciais.
@@ -473,6 +514,80 @@
       </div>
     </section>
 
+    <!-- Operações em Vídeo Section -->
+    <section id="videos" class="py-24 bg-white scroll-mt-12 overflow-hidden border-t border-stone-200/50">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center max-w-3xl mx-auto mb-16 space-y-4">
+          <span class="text-xs font-bold tracking-widest text-forest-600 uppercase">Processo Industrial e Logístico</span>
+          <h2 class="text-3xl sm:text-5xl font-extrabold text-slate-900 tracking-tight leading-tight">Nossas Operações em Ação</h2>
+          <p class="text-slate-600 text-sm sm:text-base font-light font-sans">Veja de perto o padrão Leniar Madeiras. Vídeos reais de corte de madeiras em nossa serração automatizada, movimentação logística de toras e carregamento estrutural pesado.</p>
+          <div class="h-1.5 w-24 bg-wood-600 mx-auto rounded-full"></div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <!-- Video 1 -->
+          <div class="bg-stone-50 border border-stone-200 rounded-3xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 group flex flex-col h-full">
+            <div class="aspect-video w-full relative bg-stone-100 overflow-hidden">
+              <iframe 
+                class="w-full h-full border-0 absolute inset-0" 
+                src="https://www.youtube.com/embed/Djep4gN_rGI" 
+                title="Serramento de Madeira - Leniar Madeiras" 
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                allowfullscreen>
+              </iframe>
+            </div>
+            <div class="p-6 flex flex-col justify-between flex-grow space-y-4">
+              <div class="space-y-2">
+                <span class="inline-flex px-2.5 py-1 rounded-full bg-forest-50 border border-forest-100 text-forest-700 text-[10px] uppercase font-bold tracking-wider">Industrialização</span>
+                <h3 class="text-base sm:text-lg font-bold text-slate-900 leading-tight">Serramento de Madeira</h3>
+                <p class="text-slate-500 text-xs sm:text-sm font-light leading-relaxed">Corte preciso e beneficiamento vertical de vigas e tábuas cruas e calibradas na nossa serração em Tibagi-PR.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Video 2 -->
+          <div class="bg-stone-50 border border-stone-200 rounded-3xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 group flex flex-col h-full">
+            <div class="aspect-video w-full relative bg-stone-100 overflow-hidden">
+              <iframe 
+                class="w-full h-full border-0 absolute inset-0" 
+                src="https://www.youtube.com/embed/WQuzMsZC6go" 
+                title="Carga Fechada de Vigas - Leniar Madeiras" 
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                allowfullscreen>
+              </iframe>
+            </div>
+            <div class="p-6 flex flex-col justify-between flex-grow space-y-4">
+              <div class="space-y-2">
+                <span class="inline-flex px-2.5 py-1 rounded-full bg-forest-50 border border-forest-100 text-forest-700 text-[10px] uppercase font-bold tracking-wider">Logística e Frota</span>
+                <h3 class="text-base sm:text-lg font-bold text-slate-900 leading-tight">Carga Fechada de Vigas</h3>
+                <p class="text-slate-500 text-xs sm:text-sm font-light leading-relaxed">Carregamento estrutural certificado e amarrações industriais da nossa frota própria de caminhões pesados para todo Brasil.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Video 3 -->
+          <div class="bg-stone-50 border border-stone-200 rounded-3xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 group flex flex-col h-full">
+            <div class="aspect-video w-full relative bg-stone-100 overflow-hidden">
+              <iframe 
+                class="w-full h-full border-0 absolute inset-0" 
+                src="https://www.youtube.com/embed/hvd8I2ggyVk" 
+                title="Descarga de Toras - Leniar Madeiras" 
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                allowfullscreen>
+              </iframe>
+            </div>
+            <div class="p-6 flex flex-col justify-between flex-grow space-y-4">
+              <div class="space-y-2">
+                <span class="inline-flex px-2.5 py-1 rounded-full bg-forest-50 border border-forest-100 text-forest-700 text-[10px] uppercase font-bold tracking-wider">Manejo Sustentável</span>
+                <h3 class="text-base sm:text-lg font-bold text-slate-900 leading-tight">Descarga de Toras</h3>
+                <p class="text-slate-500 text-xs sm:text-sm font-light leading-relaxed">Chegada e recepção de toras de Pinus e Eucalipto selecionados, prontas para o processamento em nosso pátio fabril.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- Timber Calculator -->
     <section id="calculadora" class="py-24 bg-stone-55 border-y border-stone-200/50 scroll-mt-12">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -559,15 +674,18 @@
 
             <!-- Calc Inputs 3: Tábuas -->
             <div x-show="activeCalc === 'taubas'" class="space-y-6">
-              <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                <div class="space-y-2">
-                  <label class="text-xs font-bold text-slate-700 uppercase">Largura de Tábua Padrão</label>
-                  <div class="flex gap-2">
-                    <button type="button" @click="boardWidth = '30'" :class="boardWidth === '30' ? 'bg-forest-600 text-white' : 'border-stone-250 text-slate-700'" class="flex-1 py-2.5 rounded-lg text-xs font-bold border">12 Polegadas (30cm)</button>
-                    <button type="button" @click="boardWidth = '25'" :class="boardWidth === '25' ? 'bg-forest-600 text-white' : 'border-stone-250 text-slate-700'" class="flex-1 py-2.5 rounded-lg text-xs font-bold border">10 Polegadas (25cm)</button>
+              <div class="grid grid-cols-1 sm:grid-cols-12 gap-6 items-end">
+                <div class="space-y-2 sm:col-span-6">
+                  <label class="text-xs font-bold text-slate-700 uppercase block">Largura da Tábua</label>
+                  <div class="grid grid-cols-5 gap-1">
+                    <button type="button" @click="boardWidth = '30'" :class="boardWidth === '30' ? 'bg-forest-600 text-white border-forest-600' : 'border-stone-250 text-slate-700 hover:bg-stone-50 bg-white'" class="py-2.5 rounded-lg text-xs font-bold border transition-all">30cm</button>
+                    <button type="button" @click="boardWidth = '25'" :class="boardWidth === '25' ? 'bg-forest-600 text-white border-forest-600' : 'border-stone-250 text-slate-700 hover:bg-stone-50 bg-white'" class="py-2.5 rounded-lg text-xs font-bold border transition-all">25cm</button>
+                    <button type="button" @click="boardWidth = '20'" :class="boardWidth === '20' ? 'bg-forest-600 text-white border-forest-600' : 'border-stone-250 text-slate-700 hover:bg-stone-50 bg-white'" class="py-2.5 rounded-lg text-xs font-bold border transition-all">20cm</button>
+                    <button type="button" @click="boardWidth = '15'" :class="boardWidth === '15' ? 'bg-forest-600 text-white border-forest-600' : 'border-stone-250 text-slate-700 hover:bg-stone-50 bg-white'" class="py-2.5 rounded-lg text-xs font-bold border transition-all">15cm</button>
+                    <button type="button" @click="boardWidth = '10'" :class="boardWidth === '10' ? 'bg-forest-600 text-white border-forest-600' : 'border-stone-250 text-slate-700 hover:bg-stone-50 bg-white'" class="py-2.5 rounded-lg text-xs font-bold border transition-all">10cm</button>
                   </div>
                 </div>
-                <div class="space-y-1">
+                <div class="space-y-1 sm:col-span-3">
                   <label class="text-xs font-bold text-slate-700 uppercase">Comprimento de Peças</label>
                   <select x-model="boardLength" class="w-full px-3 py-2.5 bg-white border border-stone-250 rounded-lg text-xs font-semibold">
                     <option value="3">3.00 Metros (Padrão Serrado)</option>
@@ -576,12 +694,52 @@
                     <option value="6">6.00 Metros (Sob Pedido)</option>
                   </select>
                 </div>
-                <div class="space-y-1">
-                  <label class="text-xs font-bold text-slate-700 uppercase">Qtd de Tábuas (Peças)</label>
-                  <input type="number" min="5" max="10000" x-model="boardQty" class="w-full px-3 py-2 border border-stone-250 rounded-lg text-sm font-semibold">
+                <div class="space-y-1 sm:col-span-3">
+                  <label class="text-xs font-bold text-slate-700 uppercase">Quantidade (Peças)</label>
+                  <input type="number" min="1" max="10000" x-model="boardQty" class="w-full px-3 py-2 border border-stone-250 rounded-lg text-xs font-semibold h-[38px] text-center">
                 </div>
               </div>
-              <div class="p-4 rounded-xl bg-forest-50/60 border border-forest-100 flex gap-3 text-stone-700">
+
+              <!-- Button to ADD to current list -->
+              <div class="flex flex-col sm:flex-row gap-4 justify-between items-center bg-stone-50 p-4 rounded-xl border border-stone-200/60 shadow-sm">
+                <p class="text-xs text-slate-650 font-light text-center sm:text-left">
+                  Faça pedidos de várias larguras e comprimentos diferentes ao mesmo tempo! Escolha acima e clique ao lado:
+                </p>
+                <button type="button" @click="addBoardItem()" class="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-forest-600 hover:bg-forest-700 text-white rounded-lg text-xs font-bold uppercase tracking-wide transition-all shadow-sm">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v8"/><path d="M8 12h8"/></svg>
+                  Adicionar ao Pedido
+                </button>
+              </div>
+
+              <!-- List of current board items if any exist -->
+              <template x-if="boardItems.length > 0">
+                <div class="space-y-3 bg-stone-50/50 p-4 rounded-2xl border border-stone-200/40">
+                  <div class="flex justify-between items-center">
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-forest-650" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+                      Seu Pedido de Tábuas (<span x-text="boardItems.length"></span> itens)
+                    </h4>
+                    <button type="button" @click="boardItems = []" class="text-[11px] text-red-600 hover:text-red-700 hover:underline flex items-center gap-1 font-semibold">
+                      Limpar Lista
+                    </button>
+                  </div>
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-1">
+                    <template x-for="(item, index) in boardItems" :key="index">
+                      <div class="flex justify-between items-center bg-white border border-stone-200 p-2.5 rounded-xl text-xs hover:border-forest-200 transition-colors">
+                        <div>
+                          <p class="font-bold text-slate-850">Tábua 2.5 x <span x-text="item.width"></span>cm</p>
+                          <p class="text-[10px] text-stone-500">Comp: <span x-text="item.length"></span>m | Qtd: <span x-text="item.qty"></span> un | Vol: <span x-text="((2.5 / 100) * (parseFloat(item.width) / 100) * item.length * item.qty).toFixed(3)"></span> m³</p>
+                        </div>
+                        <button type="button" @click="removeBoardItem(index)" class="p-1 text-stone-400 hover:text-red-605 hover:bg-red-50 rounded-lg transition-colors">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+                        </button>
+                      </div>
+                    </template>
+                  </div>
+                </div>
+              </template>
+
+              <div x-show="boardItems.length === 0" class="p-4 rounded-xl bg-forest-50/60 border border-forest-100 flex gap-3 text-stone-700">
                 <i data-lucide="info" class="w-5 h-5 text-forest-600 flex-shrink-0 mt-0.5"></i>
                 <p class="text-xs font-light leading-relaxed">
                   As tábuas grossas de Eucalyptus e Pinus autoclavados de 2,5cm de espessura de face formam andaimes e tapumes de isolação impermeáveis para maior economia prática do almoxarifado.
@@ -613,9 +771,19 @@
 
               <!-- Output: Tábuas -->
               <div x-show="activeCalc === 'taubas'" class="space-y-5">
-                <div><p class="text-stone-300 text-[10px] uppercase tracking-widest font-bold">Comprimento Linear Total</p><p class="text-3xl sm:text-4xl font-display font-bold text-white"><span x-text="boardLength * boardQty"></span> <span class="text-sm text-wood-200">metros</span></p></div>
-                <div class="border-t border-white/10 pt-3"><p class="text-stone-300 text-[10px] uppercase tracking-widest font-bold">Volume Líquido Cubado (m³)</p><p class="text-xl font-semibold text-white"><span x-text="((2.5/100)*(parseFloat(boardWidth)/100)*boardLength*boardQty).toFixed(3)"></span> <span class="text-xs text-stone-300">m³</span></p></div>
-                <div class="border-t border-white/10 pt-3"><p class="text-stone-300 text-[10px] uppercase tracking-widest font-bold">Especificação</p><p class="text-xs text-stone-300 leading-normal font-light">Lote contendo <span class="text-white font-bold" x-text="boardQty"></span> peças de 2.5cm de espessura por <span class="text-white font-bold" x-text="boardWidth + 'cm'"></span> de largura de tábua.</p></div>
+                <div><p class="text-stone-300 text-[10px] uppercase tracking-widest font-bold">Comprimento Linear Total</p><p class="text-3xl sm:text-4xl font-display font-bold text-white"><span x-text="totalBoardLinearMeters"></span> <span class="text-sm text-wood-200">metros</span></p></div>
+                <div class="border-t border-white/10 pt-3"><p class="text-stone-300 text-[10px] uppercase tracking-widest font-bold">Volume Líquido Cubado (m³)</p><p class="text-xl font-semibold text-white"><span x-text="totalBoardCubicMeters.toFixed(3)"></span> <span class="text-xs text-stone-300">m³</span></p></div>
+                <div class="border-t border-white/10 pt-3">
+                  <p class="text-stone-300 text-[10px] uppercase tracking-widest font-bold">Especificação</p>
+                  <p class="text-xs text-stone-300 leading-normal font-light">
+                    <template x-if="boardItems.length === 0">
+                      <span>Lote contendo <span class="text-white font-bold" x-text="boardQty"></span> peças de 2.5cm de espessura por <span class="text-white font-bold" x-text="boardWidth + 'cm'"></span> de largura.</span>
+                    </template>
+                    <template x-if="boardItems.length > 0">
+                      <span>Lote composto por <span class="text-white font-bold" x-text="boardItems.length"></span> tamanho(s) de tábua (<span class="text-white font-bold" x-text="totalBoardQty"></span> peças totais).</span>
+                    </template>
+                  </p>
+                </div>
               </div>
             </div>
 
@@ -648,11 +816,11 @@
               
               <div class="space-y-4">
                 <!-- Whatsapp callout -->
-                <a href="https://wa.me/5542988869655?text=Olá!%20Gostaria%20de%20solicitar%20comercial%20para%20madeiras." target="_blank" rel="noopener noreferrer" class="flex items-center gap-4 p-4 rounded-xl border border-[#25D366]/20 bg-[#25D366]/5 hover:bg-[#25D366]/10 transition-colors group">
+                <a href="https://wa.me/5542988094197?text=Olá!%20Gostaria%20de%20solicitar%20comercial%20para%20madeiras." target="_blank" rel="noopener noreferrer" class="flex items-center gap-4 p-4 rounded-xl border border-[#25D366]/20 bg-[#25D366]/5 hover:bg-[#25D366]/10 transition-colors group">
                   <div class="p-3 bg-[#25D366] text-white rounded-lg group-hover:scale-105 transition-transform"><i data-lucide="message-square" class="w-5 h-5"></i></div>
                   <div>
                     <h4 class="font-bold text-slate-800 text-xs sm:text-sm">Canal WhatsApp Comercial</h4>
-                    <p class="text-forest-700 font-bold text-sm sm:text-base">+55 (42) 98886-9655</p>
+                    <p class="text-forest-700 font-bold text-sm sm:text-base">+55 (42) 98809-4197</p>
                     <p class="text-slate-400 text-[10px]">Clique para iniciar atendimento imediato</p>
                   </div>
                 </a>
@@ -691,33 +859,28 @@
               <div class="flex items-start gap-4 p-4 rounded-xl bg-white border border-stone-200">
                 <div class="p-3 bg-wood-600 text-white rounded-lg"><i data-lucide="map-pin" class="w-5 h-5"></i></div>
                 <div>
-                  <h4 class="font-bold text-slate-800 text-xs sm:text-sm">Sede e Pátio Alto do Amparo</h4>
+                  <h4 class="font-bold text-slate-800 text-xs sm:text-sm">Sede e Pátio Rodovia 376</h4>
                   <p class="text-slate-600 text-xs sm:text-sm leading-relaxed mt-1">
-                    Alto do Amparo – Distrito Industrial florestal<br>
+                    Rod 376, km 434 s/n<br>
                     Tibagi, Paraná – CEP: 84300-000<br>
                     <span class="text-[10px] text-wood-600 font-bold block mt-1 tracking-wider uppercase">Fácil manobra e escoamento para carretas</span>
                   </p>
                 </div>
               </div>
 
-              <!-- Map illustration stand-in -->
-              <div class="rounded-2xl overflow-hidden border border-stone-200 relative bg-forest-50 h-44 flex flex-col justify-center items-center p-6 text-center shadow-sm">
-                <div class="absolute inset-0 opacity-10 pointer-events-none">
-                  <svg class="w-full h-full" xmlns="http://www.w3.org/2000/svg">
-                    <line x1="0" y1="40" x2="400" y2="200" stroke="#000" stroke-width="8"></line>
-                    <line x1="100" y1="0" x2="250" y2="300" stroke="#000" stroke-width="4"></line>
-                    <circle cx="180" cy="110" r="10" fill="#000"></circle>
-                  </svg>
-                </div>
-                <div class="z-10 space-y-2">
-                  <span class="inline-flex w-8 h-8 items-center justify-center bg-orange-650 text-white rounded-full animate-bounce">📍</span>
-                  <p class="text-xs font-bold text-slate-800 leading-none">Alto do Amparo, Tibagi-PR</p>
-                  <p class="text-[10px] text-slate-500 max-w-xs mx-auto">Posição ideal de expedição do Paraná para Curitiba, Ponta Grossa e Norte do Estado.</p>
-                </div>
+              <!-- Interactive Google Map Embed -->
+              <div class="rounded-2xl overflow-hidden border border-stone-200 bg-stone-100 h-56 shadow-sm">
+                <iframe 
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3618.3732688009587!2d-50.522697424627196!3d-24.7633706781284!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x94e9ad6fa0519b7b%3A0x336b8e07c4a8a0d3!2sLeniar%20Madeiras%20Atacado%20para%20Todo%20Brasil!5e0!3m2!1spt-BR!2sbr!4v1718386345000!5m2!1spt-BR!2sbr" 
+                  class="w-full h-full border-0" 
+                  allowfullscreen="" 
+                  loading="lazy" 
+                  referrerpolicy="no-referrer-when-downgrade">
+                </iframe>
               </div>
             </div>
             
-            <a href="https://maps.google.com/?q=Alto+do+Amparo,Tibagi,Paraná" target="_blank" rel="noopener noreferrer" class="w-full inline-flex items-center justify-center gap-2 px-6 py-4 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl text-xs sm:text-sm tracking-wide transition-colors">Abrir no Google Maps <i data-lucide="arrow-up-right" class="w-4 h-4"></i></a>
+            <a href="https://www.google.com/maps/place/Leniar+Madeiras+Atacado+para+Todo+Brasil/@-24.763626,-50.5252744,16.5z/data=!4m15!1m8!3m7!1s0x94e9ad5975b7e779:0xbc1faff332029927!2sAlto+do+Amparo,+Tibagi+-+PR,+84300-000!3b1!8m2!3d-24.7462446!4d-50.5394574!16s%2Fg%2F11x7vf4_s!3m5!1s0x94e9ad6fa0519b7b:0x336b8e07c4a8a0d3!8m2!3d-24.7633756!4d-50.5201225!16s%2Fg%2F11j01svkz2?entry=ttu" target="_blank" rel="noopener noreferrer" class="w-full inline-flex items-center justify-center gap-2 px-6 py-4 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl text-xs sm:text-sm tracking-wide transition-colors">Como Chegar no Google Maps <i data-lucide="arrow-up-right" class="w-4 h-4"></i></a>
           </div>
 
         </div>
@@ -727,9 +890,9 @@
   </main>
 
   <!-- Footer -->
-  <footer id="main-footer" class="bg-forest-950 text-stone-300 border-t border-forest-900 pt-16 pb-8 overflow-hidden">
+  <footer id="main-footer" class="bg-forest-900 text-stone-200 border-t border-white/10 pt-16 pb-8 overflow-hidden">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="grid grid-cols-1 md:grid-cols-12 gap-12 pb-12 border-b border-forest-900">
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-12 pb-12 border-b border-white/10">
         <!-- Brand column -->
         <div class="md:col-span-5 space-y-4">
           <a href="#home" class="inline-flex items-center gap-2 group">
@@ -739,43 +902,52 @@
               <span class="text-[10px] tracking-widest text-wood-200 uppercase font-semibold">Madeiras</span>
             </div>
           </a>
-          <p class="text-xs sm:text-sm text-stone-400 font-light leading-relaxed max-w-sm">Atendimento e industrialização vertical. Manejo credenciado Ibama, autoclave de alto índice e transporte rodoviário próprio. Especialistas em Pinus e Eucalipto sediados em Alto do Amparo - Tibagi-PR.</p>
+          <p class="text-xs sm:text-sm text-stone-300 font-light leading-relaxed max-w-sm">Atendimento e industrialização vertical. Manejo credenciado Ibama, autoclave de alto índice e transporte rodoviário próprio. Especialistas em Pinus e Eucalipto sediados na Rod 376, Km 434 - Tibagi-PR.</p>
         </div>
         <!-- Links columns -->
         <div class="md:col-span-3 space-y-4">
           <h4 class="font-display font-bold text-xs sm:text-sm text-white uppercase tracking-wider">Atalhos do Site</h4>
           <ul class="space-y-2 text-xs sm:text-sm">
-            <li><a href="#home" class="hover:text-wood-200 transition-colors">Início</a></li>
-            <li><a href="#sobre" class="hover:text-wood-200 transition-colors">Sobre Nós</a></li>
-            <li><a href="#produtos" class="hover:text-wood-200 transition-colors">Divisões comerciais</a></li>
-            <li><a href="#autoclave" class="hover:text-wood-200 transition-colors">Processo Autoclave</a></li>
-            <li><a href="#logistica" class="hover:text-wood-200 transition-colors">Frota Rodoviária</a></li>
-            <li><a href="#calculadora" class="hover:text-wood-200 transition-colors">Simulador de projeto</a></li>
+            <li><a href="#home" class="text-stone-300 hover:text-wood-200 transition-colors inline-block hover:translate-x-1 duration-200 transform">Início</a></li>
+            <li><a href="#sobre" class="text-stone-300 hover:text-wood-200 transition-colors inline-block hover:translate-x-1 duration-200 transform">Sobre Nós</a></li>
+            <li><a href="#produtos" class="text-stone-300 hover:text-wood-200 transition-colors inline-block hover:translate-x-1 duration-200 transform">Divisões comerciais</a></li>
+            <li><a href="#autoclave" class="text-stone-300 hover:text-wood-200 transition-colors inline-block hover:translate-x-1 duration-200 transform">Processo Autoclave</a></li>
+            <li><a href="#logistica" class="text-stone-300 hover:text-wood-200 transition-colors inline-block hover:translate-x-1 duration-200 transform">Frota Rodoviária</a></li>
+            <li><a href="#videos" class="text-stone-300 hover:text-wood-200 transition-colors inline-block hover:translate-x-1 duration-200 transform">Vídeos Operacionais</a></li>
+            <li><a href="#calculadora" class="text-stone-300 hover:text-wood-200 transition-colors inline-block hover:translate-x-1 duration-200 transform">Simulador de projeto</a></li>
           </ul>
         </div>
         <!-- Admin details col -->
         <div class="md:col-span-4 space-y-4">
           <h4 class="font-display font-bold text-xs sm:text-sm text-white uppercase tracking-wider">Contato Administrativo</h4>
-          <div class="space-y-3 text-xs sm:text-sm text-stone-400 font-light max-w-xs">
-            <div class="flex items-start gap-2"><i data-lucide="map-pin" class="w-4 h-4 text-wood-200 mt-0.5 select-none"></i><p>Alto do Amparo – Tibagi, Paraná – CEP: 84300-000</p></div>
-            <div class="flex items-center gap-2"><i data-lucide="phone" class="w-4 h-4 text-wood-200 select-none"></i><p>+55 (42) 98886-9655</p></div>
-            <div class="flex items-center gap-2"><i data-lucide="mail" class="w-4 h-4 text-wood-200 select-none"></i><p>contato@leniarmadeiras.com.br</p></div>
+          <div class="space-y-3 text-xs sm:text-sm text-stone-300 font-light max-w-xs">
+            <div class="flex items-start gap-2.5 hover:text-white transition-colors duration-200">
+              <i data-lucide="map-pin" class="w-4 h-4 text-wood-200 mt-0.5 flex-shrink-0 select-none"></i>
+              <p>Rod 376, km 434 s/n, Tibagi - PR – CEP: 84300-000</p>
+            </div>
+            <div class="flex items-center gap-2.5 hover:text-white transition-colors duration-200">
+              <i data-lucide="phone" class="w-4 h-4 text-wood-200 flex-shrink-0 select-none"></i>
+              <p>+55 (42) 98809-4197</p>
+            </div>
+            <div class="flex items-center gap-2.5 hover:text-white transition-colors duration-200">
+              <i data-lucide="mail" class="w-4 h-4 text-wood-200 flex-shrink-0 select-none"></i>
+              <p>contato@leniarmadeiras.com.br</p>
+            </div>
           </div>
         </div>
       </div>
-      <div class="mt-8 flex flex-col sm:flex-row justify-between items-center gap-4 text-[10px] text-stone-500 font-light text-center sm:text-left">
+      <div class="mt-8 flex flex-col sm:flex-row justify-between items-center gap-4 text-[10px] text-stone-400 font-light text-center sm:text-left">
         <div>
           <p>© 2026 Leniar Madeiras Ltda. Todos os direitos reservados.</p>
-          <p class="mt-0.5">Alto do Amparo – Distrito de Tibagi-PR. CNPJ: 00.000.000/0001-00 (Exclusivo Demonstrativo)</p>
+          <p class="mt-0.5 text-stone-500">Rod 376, km 434 s/n, Tibagi - PR. CNPJ: 00.000.000/0001-00 (Exclusivo Demonstrativo)</p>
         </div>
-        <p class="text-stone-650">Organizado e higienizado para simples portabilidade e hospedagem de servidores estáticos ou Git Pages.</p>
       </div>
     </div>
   </footer>
 
   <!-- Floating WhatsApp widget button -->
   <div id="whatsapp-floater" x-show="isWhatsappBtnVisible" x-transition class="fixed bottom-6 right-6 z-50">
-    <a href="https://wa.me/5542988869655?text=Olá!%20Gostaria%20de%20conversar%20sobre%20madeiramento%20e%20fazer%20um%20orçamento." target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 bg-[#25D366] text-white px-4 py-3 rounded-full shadow-2xl hover:bg-[#20ba5a] transition-all hover:scale-105 active:scale-95 group">
+    <a href="https://wa.me/5542988094197?text=Olá!%20Gostaria%20de%20conversar%20sobre%20madeiramento%20e%20fazer%20um%20orçamento." target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 bg-[#25D366] text-white px-4 py-3 rounded-full shadow-2xl hover:bg-[#20ba5a] transition-all hover:scale-105 active:scale-95 group">
       <span class="relative flex h-2.5 w-2.5">
         <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
         <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-100"></span>
